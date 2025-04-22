@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import Hero from '../components/Hero';
-import ProjectCard from '../components/ProjectCard';
-import Contact from '../components/Contact';
-import AdminModal from '../components/AdminModal';
-import Navbar from '../components/Navbar';
-import Section from '../components/Section';
-import Footer from '../components/Footer';
+import dynamic from 'next/dynamic';
+
+const Hero = dynamic(() => import('../components/Hero'), { ssr: false });
+const ProjectCard = dynamic(() => import('../components/ProjectCard'), { ssr: false });
+const Contact = dynamic(() => import('../components/Contact'), { ssr: false });
+const AdminModal = dynamic(() => import('../components/AdminModal'), { ssr: false });
+const Navbar = dynamic(() => import('../components/Navbar'), { ssr: false });
+const Section = dynamic(() => import('../components/Section'), { ssr: false });
+const Footer = dynamic(() => import('../components/Footer'), { ssr: false });
 import { connectToDatabase } from '../lib/mongodb';
 
 export default function Home({ initialProjects, initialCategories, initialHero, initialAbout, initialContact }) {
