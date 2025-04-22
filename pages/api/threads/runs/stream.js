@@ -8,6 +8,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing threadId or runId' });
   }
 
+  console.log('Stream request received:', {
+    threadId,
+    runId,
+    timestamp: new Date().toISOString()
+  });
+
   // Configure SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
@@ -55,9 +61,22 @@ export default async function handler(req, res) {
           const content = assistantMsg?.content?.[0]?.text?.value || '';
 
           // Emit SSE events
-          res.write(`event: start\ndata: ${JSON.stringify({ type: 'start' })}\n\n`);
-          res.write(`event: delta\ndata: ${JSON.stringify({ type: 'delta', content })}\n\n`);
-          res.write(`event: complete\ndata: ${JSON.stringify({ type: 'complete' })}\n\n`);
+          const startEvent = { type: 'start' };
+          console.log('Sending start event:', startEvent);
+          res.write(`event: start\ndata: ${JSON.stringify(startEvent)}\n\n`);
+
+          const deltaEvent = { type: 'delta', content };
+          console.log('Sending delta event:', {
+            threadId,
+            runId,
+            contentLength: content.length,
+            contentPreview: content.substring(0, 100) + '...'
+          });
+          res.write(`event: delta\ndata: ${JSON.stringify(deltaEvent)}\n\n`);
+
+          const completeEvent = { type: 'complete' };
+          console.log('Sending complete event:', { threadId, runId });
+          res.write(`event: complete\ndata: ${JSON.stringify(completeEvent)}\n\n`);
         }
         return res.end();
       }
@@ -68,6 +87,11 @@ export default async function handler(req, res) {
         res.write(`event: error\ndata: ${JSON.stringify({ error: 'Run timeout' })}\n\n`);
         return res.end();
       }
+
+      console.log(`Polling run status (attempt ${attempts + 1}/${maxAttempts}):`, {
+        threadId,
+        runId
+      });
 
       setTimeout(poll, 1500);
     } catch (err) {

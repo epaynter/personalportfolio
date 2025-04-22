@@ -11,22 +11,31 @@ export async function GET(request) {
     const threadId = searchParams.get('threadId');
     const runId = searchParams.get('runId');
 
+    // Log incoming request parameters
+    console.log('Stream request received:', {
+      threadId,
+      runId,
+      timestamp: new Date().toISOString()
+    });
+
     if (!threadId || !runId) {
+      console.error('Missing required parameters:', { threadId, runId });
       return new NextResponse('Missing threadId or runId', { status: 400 });
     }
 
     // Set SSE headers
-    const headers = new Headers();
-    headers.set('Content-Type', 'text/event-stream');
-    headers.set('Cache-Control', 'no-cache');
-    headers.set('Connection', 'keep-alive');
+    const headers = new Headers({
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Write initial event to establish connection
-          controller.enqueue(encoder.encode('data: {"type": "start"}\n\n'));
+          // Send start event
+          controller.enqueue(encoder.encode(`event: start\ndata: ${JSON.stringify({ type: 'start' })}\n\n`));
 
           // Poll for run status
           let runStatus = 'queued';
@@ -36,7 +45,7 @@ export async function GET(request) {
 
           while (runStatus === 'queued' || runStatus === 'in_progress') {
             if (attempts >= maxAttempts) {
-              controller.enqueue(encoder.encode('data: {"type": "error", "error": "Run timed out"}\n\n'));
+              controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ type: 'error', error: 'Run timed out' })}\n\n`));
               controller.close();
               return;
             }
@@ -51,17 +60,20 @@ export async function GET(request) {
               
               if (latestMessage && latestMessage.content[0].text) {
                 const content = latestMessage.content[0].text.value;
-                controller.enqueue(encoder.encode(`data: {"type": "delta", "content": "${content}"}\n\n`));
+                // Send delta event with content
+                controller.enqueue(encoder.encode(`event: delta\ndata: ${JSON.stringify({ type: 'delta', content })}\n\n`));
                 hasSentMessage = true;
               }
               
-              controller.enqueue(encoder.encode('data: {"type": "complete"}\n\n'));
+              // Send complete event
+              controller.enqueue(encoder.encode(`event: complete\ndata: ${JSON.stringify({ type: 'complete' })}\n\n`));
               controller.close();
               return;
             }
 
             if (runStatus === 'failed' || runStatus === 'expired' || runStatus === 'cancelled') {
-              controller.enqueue(encoder.encode(`data: {"type": "error", "error": "Run ${runStatus}"}\n\n`));
+              // Send error event with specific status
+              controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ type: 'error', error: `Run ${runStatus}` })}\n\n`));
               controller.close();
               return;
             }
@@ -71,7 +83,8 @@ export async function GET(request) {
           }
         } catch (error) {
           console.error('Stream error:', error);
-          controller.enqueue(encoder.encode(`data: {"type": "error", "error": "${error.message}"}\n\n`));
+          // Send error event with error message
+          controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`));
           controller.close();
         }
       },
@@ -80,6 +93,9 @@ export async function GET(request) {
     return new NextResponse(stream, { headers });
   } catch (error) {
     console.error('Stream endpoint error:', error);
-    return new NextResponse(error.message, { status: 500 });
+    return new NextResponse(JSON.stringify({ error: error.message }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 } 
