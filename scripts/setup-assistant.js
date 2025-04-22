@@ -30,7 +30,7 @@ async function setupAssistant() {
       body: JSON.stringify({
         name: 'Portfolio Assistant',
         instructions: 'You are a helpful assistant for a portfolio website. You can answer questions about the portfolio owner, their projects, and provide information about their skills and experience.',
-        model: 'gpt-4',
+        model: 'gpt-4o',
         tools: [
           { type: 'code_interpreter' }
         ],
