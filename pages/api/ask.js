@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4', // Fixed model name
+      model: 'gpt-4o', // Fixed model name
       messages: [{ role: 'user', content: prompt }],
     }),
   });
