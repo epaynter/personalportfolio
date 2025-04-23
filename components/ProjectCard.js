@@ -8,6 +8,7 @@ export default function ProjectCard({ project }) {
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [currentContentIndex, setCurrentContentIndex] = useState(project.selectedContentIndex || 0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Clean HTML content by removing empty paragraphs
   const cleanHtml = (html) => {
@@ -222,7 +223,7 @@ export default function ProjectCard({ project }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] overflow-y-auto"
             onClick={() => setIsModalOpen(false)}
           >
             <motion.div
@@ -230,9 +231,20 @@ export default function ProjectCard({ project }) {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="bg-white dark:bg-zinc-800 rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl"
+              className="bg-white dark:bg-zinc-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
               onClick={e => e.stopPropagation()}
             >
+              {/* Close button - always visible at top */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 z-50 p-2 bg-black/50 backdrop-blur-sm rounded-full hover:bg-black/70 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
               <div className="relative aspect-video">
                 {currentContent.type === 'image' ? (
                   <img
@@ -317,7 +329,32 @@ export default function ProjectCard({ project }) {
                   {project.title}
                 </h2>
                 <div className="project-content text-gray-600 dark:text-zinc-300 mb-6">
-                  <div dangerouslySetInnerHTML={{ __html: cleanHtml(project.longDescription || project.shortDescription || "No description available") }} />
+                  <div className="relative">
+                    <div 
+                      className={`prose prose-sm dark:prose-invert max-w-none transition-all duration-300 ${
+                        isExpanded ? 'max-h-none' : 'max-h-[200px] overflow-hidden'
+                      }`}
+                    >
+                      <div dangerouslySetInnerHTML={{ __html: cleanHtml(project.longDescription || project.shortDescription || "No description available") }} />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white dark:from-zinc-800 to-transparent flex items-end justify-center">
+                      {!isExpanded ? (
+                        <button
+                          onClick={() => setIsExpanded(true)}
+                          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors mb-2"
+                        >
+                          Show More
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setIsExpanded(false)}
+                          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors mb-2"
+                        >
+                          Show Less
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {getTags().map((tag, index) => (

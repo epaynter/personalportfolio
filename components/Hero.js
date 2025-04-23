@@ -215,25 +215,25 @@ export default function Hero({ heroData, onUpdateHero }) {
       return index < 2 ? leftPositions[index] : rightPositions[index - 2];
     } else {
       // Desktop layout with all four positions
-      const positions = [
-        { top: '5%', left: '2%' },
-        { top: '5%', right: '2%' },
-        { bottom: '-2%', left: '2%' },
-        { bottom: '-2%', right: '2%' }
-      ];
-      
-      // Get the position based on index
-      const position = positions[index % positions.length];
-      
-      // Add a very small random offset (max 2px) to make it look slightly more natural
-      // but not enough to cause overlap
-      const randomOffsetX = (Math.random() * 4 - 2);
-      const randomOffsetY = (Math.random() * 4 - 2);
-      
-      return {
-        ...position,
-        transform: `translate(${randomOffsetX}px, ${randomOffsetY}px) rotate(-5deg)`
-      };
+    const positions = [
+      { top: '5%', left: '2%' },
+      { top: '5%', right: '2%' },
+      { bottom: '-2%', left: '2%' },
+      { bottom: '-2%', right: '2%' }
+    ];
+    
+    // Get the position based on index
+    const position = positions[index % positions.length];
+    
+    // Add a very small random offset (max 2px) to make it look slightly more natural
+    // but not enough to cause overlap
+    const randomOffsetX = (Math.random() * 4 - 2);
+    const randomOffsetY = (Math.random() * 4 - 2);
+    
+    return {
+      ...position,
+      transform: `translate(${randomOffsetX}px, ${randomOffsetY}px) rotate(-5deg)`
+    };
     }
   };
 
@@ -361,8 +361,8 @@ export default function Hero({ heroData, onUpdateHero }) {
                         isWorkInProgress
                           ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-800/30'
                           : isRecording 
-                            ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/30' 
-                            : 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-800/30'
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/30' 
+                          : 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-800/30'
                       }`}
                       title={isRecording ? "Click to end" : "Click to start"}
                     >
